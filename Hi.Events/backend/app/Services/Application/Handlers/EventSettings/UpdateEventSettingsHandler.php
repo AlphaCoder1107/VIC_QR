@@ -1,0 +1,125 @@
+<?php
+
+namespace HiEvents\Services\Application\Handlers\EventSettings;
+
+use HiEvents\DomainObjects\Enums\CapacityChangeDirection;
+use HiEvents\DomainObjects\EventSettingDomainObject;
+use HiEvents\Events\CapacityChangedEvent;
+use HiEvents\Repository\Interfaces\EventSettingsRepositoryInterface;
+use HiEvents\Services\Application\Handlers\EventSettings\DTO\UpdateEventSettingsDTO;
+use HiEvents\Services\Infrastructure\HtmlPurifier\HtmlPurifierService;
+use Illuminate\Database\DatabaseManager;
+use Throwable;
+
+class UpdateEventSettingsHandler
+{
+    public function __construct(
+        private readonly EventSettingsRepositoryInterface $eventSettingsRepository,
+        private readonly HtmlPurifierService              $purifier,
+        private readonly DatabaseManager                  $databaseManager,
+    )
+    {
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function handle(UpdateEventSettingsDTO $settings): EventSettingDomainObject
+    {
+        $existingSettings = $this->eventSettingsRepository->findFirstWhere([
+            'event_id' => $settings->event_id,
+        ]);
+
+        $wasAutoProcessEnabled = $existingSettings?->getWaitlistAutoProcess();
+
+        $result = $this->databaseManager->transaction(function () use ($settings) {
+            $this->eventSettingsRepository->updateWhere(
+                attributes: [
+                    'post_checkout_message' => $this->purifier->purify($settings->post_checkout_message),
+                    'pre_checkout_message' => $this->purifier->purify($settings->pre_checkout_message),
+                    'email_footer_message' => $this->purifier->purify($settings->email_footer_message),
+                    'support_email' => $settings->support_email,
+                    'require_attendee_details' => $settings->require_attendee_details,
+                    'attendee_details_collection_method' => $settings->attendee_details_collection_method->name,
+                    'continue_button_text' => trim($settings->continue_button_text),
+
+                    'homepage_background_color' => $settings->homepage_background_color,
+                    'homepage_primary_color' => $settings->homepage_primary_color,
+                    'homepage_primary_text_color' => $settings->homepage_primary_text_color,
+                    'homepage_secondary_color' => $settings->homepage_secondary_color,
+                    'homepage_secondary_text_color' => $settings->homepage_secondary_text_color,
+                    'homepage_body_background_color' => $settings->homepage_body_background_color,
+                    'homepage_background_type' => $settings->homepage_background_type->name,
+
+                    'order_timeout_in_minutes' => $settings->order_timeout_in_minutes,
+                    'website_url' => trim($settings->website_url),
+                    'maps_url' => trim($settings->maps_url),
+                    'location_details' => $settings->location_details?->toArray(),
+                    'is_online_event' => $settings->is_online_event,
+                    'online_event_connection_details' => $this->purifier->purify($settings->online_event_connection_details),
+
+                    'seo_title' => $settings->seo_title,
+                    'seo_description' => $settings->seo_description,
+                    'seo_keywords' => $settings->seo_keywords,
+                    'allow_search_engine_indexing' => $settings->allow_search_engine_indexing,
+                    'notify_organizer_of_new_orders' => $settings->notify_organizer_of_new_orders,
+                    'price_display_mode' => $settings->price_display_mode->name,
+                    'hide_getting_started_page' => $settings->hide_getting_started_page,
+
+                    // Payment settings
+                    'payment_providers' => $settings->payment_providers,
+                    'offline_payment_instructions' => $this->purifier->purify($settings->offline_payment_instructions),
+                    'allow_orders_awaiting_offline_payment_to_check_in' => $settings->allow_orders_awaiting_offline_payment_to_check_in,
+
+                    // Invoice settings
+                    'enable_invoicing' => $settings->enable_invoicing,
+                    'invoice_label' => trim($settings->invoice_label),
+                    'invoice_prefix' => trim($settings->invoice_prefix),
+                    'invoice_start_number' => $settings->invoice_start_number,
+                    'require_billing_address' => $settings->require_billing_address,
+                    'organization_name' => trim($settings->organization_name),
+                    'organization_address' => $this->purifier->purify($settings->organization_address),
+                    'invoice_tax_details' => $this->purifier->purify($settings->invoice_tax_details),
+                    'invoice_notes' => $this->purifier->purify($settings->invoice_notes),
+                    'invoice_payment_terms_days' => $settings->invoice_payment_terms_days,
+
+                    // Ticket design settings
+                    'ticket_design_settings' => $settings->ticket_design_settings,
+
+                    // Marketing settings
+                    'show_marketing_opt_in' => $settings->show_marketing_opt_in,
+
+                    // Platform fee settings
+                    'pass_platform_fee_to_buyer' => $settings->pass_platform_fee_to_buyer,
+
+                    // Homepage theme settings
+                    'homepage_theme_settings' => $settings->homepage_theme_settings,
+
+                    // Self-service settings
+                    'allow_attendee_self_edit' => $settings->allow_attendee_self_edit,
+
+                    // Waitlist settings
+                    'waitlist_auto_process' => $settings->waitlist_auto_process,
+                    'waitlist_offer_timeout_minutes' => $settings->waitlist_offer_timeout_minutes,
+                ],
+                where: [
+                    'event_id' => $settings->event_id,
+                ],
+            );
+
+            return $this->eventSettingsRepository
+                ->findFirstWhere([
+                    'event_id' => $settings->event_id,
+                ]);
+        });
+
+        if ($settings->waitlist_auto_process && !$wasAutoProcessEnabled) {
+            event(new CapacityChangedEvent(
+                eventId: $settings->event_id,
+                direction: CapacityChangeDirection::INCREASED,
+            ));
+        }
+
+        return $result;
+    }
+}

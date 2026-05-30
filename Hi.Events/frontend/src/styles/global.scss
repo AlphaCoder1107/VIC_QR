@@ -1,0 +1,82 @@
+@use "mixins";
+
+:root {
+  --hi-text: var(--mantine-color-primary-9);
+  --hi-primary: var(--mantine-color-primary-9);
+  --hi-secondary:  var(--mantine-color-secondary-1);
+  --hi-secondary-text: var(--mantine-color-primary-8);
+  --hi-color-gray: #f7f6f8;
+  --hi-color-gray-2: #e2e2e2;
+  --hi-color-gray-dark: #838383;
+  --hi-color-money-green: #00b894;
+  --hi-color-blue: var(--mantine-color-primary-4);
+  --hi-link-color: var(--hi-primary);
+  --hi-pink: var(--mantine-color-primary-5);
+  --hi-primary-alt: var(--mantine-color-primary-6);
+  --hi-gradient: linear-gradient(135deg, var(--hi-primary), var(--hi-primary-alt));
+  --hi-scrollbar-thumb: #e1e1e1;
+
+  --hi-color-white: #ffffff;
+  --hi-color-black: #000000;
+
+  --hi-spacing-xs: 3px;
+  --hi-spacing-sm: 5px;
+  --hi-spacing-md: 10px;
+  --hi-spacing-lg: 20px;
+  --hi-spacing-xl: 25px;
+
+  --hi-radius-xs: 3px;
+  --hi-radius-sm: 5px;
+  --hi-radius-md: 7px;
+  --hi-radius-lg: 10px;
+  --hi-radius-xl: 15px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: auto;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  color: var(--hi-text);
+  background-color: var(--checkout-background, var(--hi-color-gray)) !important;
+  height: auto;
+  letter-spacing: 0.2px;
+}
+
+h1, h2, h3 {
+  letter-spacing: 0.3px;
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  color: var(--hi-link-color);
+}
+
+// Mantine overrides
+.mantine-InputWrapper-root, .mantine-Switch-root {
+  margin-bottom: var(--hi-spacing-lg);
+}
+
+.mantine-ScrollArea-viewport {
+  padding-bottom: 0 !important;
+}
+
+.mantine-Modal-content {
+  @include mixins.scrollbar();
+}
+
+.mantine-SimpleGrid-root {
+  .mantine-InputWrapper-root, .mantine-Switch-root {
+    //margin-bottom: 0;
+  }
+}

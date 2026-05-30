@@ -1,0 +1,100 @@
+{
+    "name": "hieventsdev/hi.events",
+    "type": "project",
+    "description": "hi.events - Ticket selling and event management.",
+    "keywords": ["ticketing", "events"],
+    "license": "AGPL-3.0",
+    "version": "1.8.0-beta",
+    "require": {
+        "php": "^8.2",
+        "ext-intl": "*",
+        "ext-xmlwriter": "*",
+        "barryvdh/laravel-dompdf": "^3.0",
+        "brick/money": "^0.10.1",
+        "doctrine/dbal": "^3.6",
+        "ezyang/htmlpurifier": "^4.17",
+        "guzzlehttp/guzzle": "^7.2",
+        "lab404/laravel-impersonate": "^1.7",
+        "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.8",
+        "laravel/vapor-core": "^2.37",
+        "league/flysystem-aws-s3-v3": "^3.0",
+        "liquid/liquid": "^1.4",
+        "maatwebsite/excel": "^3.1",
+        "nette/php-generator": "^4.0",
+        "php-open-source-saver/jwt-auth": "^2.1",
+        "sentry/sentry-laravel": "^4.13",
+        "spatie/icalendar-generator": "^3.0",
+        "spatie/laravel-data": "^4.15",
+        "spatie/laravel-webhook-server": "^3.8",
+        "stripe/stripe-php": "^17.0",
+        "razorpay/razorpay": "^2.9",
+        "phpoffice/phpspreadsheet": "^1.29",
+        "symfony/http-client": "^7.4",
+        "symfony/postmark-mailer": "^7.4"
+    },
+    "suggest": {
+        "ext-imagick": "Required for image dimension extraction and LQIP generation"
+    },
+    "require-dev": {
+        "druc/laravel-langscanner": "dev-l12-compatibility",
+        "fakerphp/faker": "^1.9.1",
+        "gettext/gettext": "^5.7",
+        "laravel/pint": "^1.0",
+        "laravel/sail": "^1.22",
+        "mockery/mockery": "^1.4.4",
+        "nunomaduro/collision": "^8.1",
+        "phpunit/phpunit": "^11.0",
+        "spatie/laravel-ignition": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "HiEvents\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/laravel-shift/laravel-langscanner.git"
+        }
+    ]
+}
